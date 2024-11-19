@@ -62,9 +62,9 @@ export const DateSelect = ({ className }: { className: string }) => {
     if (!hasScrolled) return; // Don't load if user hasn't scrolled
 
     const lastDate = new Date();
-    lastDate.setDate(lastDate.getDate() + data.length - 3);
+    lastDate.setDate(lastDate.getDate() + data.length - 4);
     const firstDate = new Date();
-    firstDate.setDate(firstDate.getDate() - 3 - data.length);
+    firstDate.setDate(firstDate.getDate() - data.length + 5);
     let newDates;
 
     if (direction === "end") {
