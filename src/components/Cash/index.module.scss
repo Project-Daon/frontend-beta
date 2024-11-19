@@ -1,0 +1,10 @@
+.coin {
+	display: flex;
+	margin-right: auto;
+	align-items: center;
+	cursor: pointer;
+}
+.coin>img{
+	width: var(--font-size-subTitle);
+	height: var(--font-size-subTitle);
+}

@@ -1,0 +1,32 @@
+@import '/fonts/pretendard/pretendardvariable-dynamic-subset.css';
+$font-family-primary: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+
+$typography: (
+	header2: (size: 2.4rem, weight: 700, line-height: 3.4rem),
+	header3: (size: 2.2rem, weight: 600, line-height: 3.2rem),
+  subTitle: (size: 1.6rem, weight: 500, line-height: 2.2rem),
+	body: (size:1.2rem, weight:500, line-height: 3rem)
+);
+
+@mixin typography($type) {
+  font-size: map-get(map-get($typography, $type), size);
+  font-weight: map-get(map-get($typography, $type), weight);
+  line-height: map-get(map-get($typography, $type), line-height);
+  font-family: $font-family-primary;
+}
+
+html {
+  font-size: 62.5%;
+}
+
+:root {
+  @each $type, $styles in $typography {
+    --font-size-#{$type}: #{map-get($styles, size)};
+	}
+}
+
+@each $type, $styles in $typography {
+  .typo-#{$type} {
+    @include typography($type);
+  }
+}

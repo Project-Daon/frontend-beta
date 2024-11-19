@@ -1,0 +1,45 @@
+$colors: (
+  "primary": (
+    "default": #CBBEFF,
+  ),
+	"grey": (
+		"default": #404040,
+		"light": #6D6D6D
+	),
+	"dark": #18171C,
+	"blue": #0B0B97,
+	"red": #870C0F
+);
+
+$themes: (
+  "dark": (
+		"background": #18171C,
+  	"text": #ffffff,
+	),
+);
+
+:root {
+  @each $color-name, $shades in $colors {
+    @if type-of($shades) == "map" {
+      @each $shade-name, $color-value in $shades {
+				@if $shade-name == "default" {
+					--color-#{$color-name}: #{$color-value};
+				} @else {
+        	--color-#{$color-name}-#{$shade-name}: #{$color-value};
+				}
+      }
+    } @else {
+      --color-#{$color-name}: #{$shades};
+    }
+  }
+}
+
+html {
+	@each $theme-name, $theme-values in $themes {
+    &[data-theme="#{$theme-name}"] {
+      @each $key, $value in $theme-values {
+        --theme-#{$key}: #{$value};
+      }
+    }
+  }
+}
