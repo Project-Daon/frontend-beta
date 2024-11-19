@@ -20,9 +20,8 @@ const getDate = (startDate: Date, daysToAdd: number): number[][] => {
 
 export const DateSelect = ({ className }: { className: string }) => {
   const today = new Date();
-  const initialDates = getDate(new Date(Date.now() - 4 * 86400000), 10);
+  const initialDates = getDate(new Date(Date.now() - 5 * 86400000), 12);
 
-  // Find today's index in the initialDates array
   const todayIndex = initialDates.findIndex(
     (date) => date[0] === today.getDate() && date[1] === today.getDay()
   );
@@ -36,7 +35,6 @@ export const DateSelect = ({ className }: { className: string }) => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
 
-      // Center the dates initially
       const dateItem = container.querySelector(`.${styles.dateItem}`);
       if (dateItem) {
         const itemWidth = dateItem.clientWidth;
@@ -46,7 +44,6 @@ export const DateSelect = ({ className }: { className: string }) => {
         container.scrollLeft = scrollPosition;
       }
 
-      // Add scroll listener
       const handleScroll = () => {
         if (!hasScrolled) {
           setHasScrolled(true);
@@ -59,40 +56,44 @@ export const DateSelect = ({ className }: { className: string }) => {
   }, []);
 
   const loadMoreDates = (direction: "start" | "end") => {
-    if (!hasScrolled) return; // Don't load if user hasn't scrolled
+    if (!hasScrolled) return;
 
-    const lastDate = new Date();
-    lastDate.setDate(lastDate.getDate() + data.length - 4);
-    const firstDate = new Date();
-    firstDate.setDate(firstDate.getDate() - data.length + 5);
-    let newDates;
+    if (direction === "start") {
+      const firstDate = new Date();
+      firstDate.setDate(firstDate.getDate() - data.length + 5);
+      let newDates = getDate(firstDate, -3);
 
-    if (direction === "end") {
-      newDates = getDate(lastDate, 3);
-      setData([...data, ...newDates]);
+      // Store current scroll position
+      const container = scrollContainerRef.current;
+      if (container) {
+        const dateItem = container.querySelector(`.${styles.dateItem}`);
+        if (dateItem) {
+          const itemWidth = dateItem.clientWidth;
+          const prevScrollLeft = container.scrollLeft;
+
+          // Adjust scroll position after render
+          requestAnimationFrame(() => {
+            container.scrollTo({
+              left: prevScrollLeft + itemWidth * 3,
+              behavior: "instant" as ScrollBehavior,
+            });
+          });
+
+          // Update data and selectedIndex in one batch
+          setData([...newDates, ...data]);
+          setSelectedIndex(selectedIndex + 3);
+        }
+      }
     } else {
-      newDates = getDate(firstDate, -3);
-      setSelectedIndex(selectedIndex + 3);
-      setData([...newDates, ...data]);
+      const lastDate = new Date();
+      lastDate.setDate(lastDate.getDate() + data.length - 4);
+      let newDates = getDate(lastDate, 3);
+      setData([...data, ...newDates]);
     }
   };
 
-  const { ref: endRef, inView: endInView } = useInView({
-    root: scrollContainerRef.current,
-    rootMargin: "20px",
-    threshold: 1.0,
-  });
-  const { ref: startRef, inView: startInView } = useInView({
-    root: scrollContainerRef.current,
-    rootMargin: "20px",
-    threshold: 1.0,
-  });
-
-  useLayoutEffect(() => {
-    if (endInView) {
-      loadMoreDates("end");
-    }
-  }, [endInView]);
+  const { ref: startRef, inView: startInView } = useInView({});
+  const { ref: endRef, inView: endInView } = useInView({});
 
   useLayoutEffect(() => {
     if (startInView) {
@@ -100,13 +101,18 @@ export const DateSelect = ({ className }: { className: string }) => {
     }
   }, [startInView]);
 
+  useLayoutEffect(() => {
+    if (endInView) {
+      loadMoreDates("end");
+    }
+  }, [endInView]);
+
   return (
     <div
       className={`${styles.scrollContainer} ${className}`}
       ref={scrollContainerRef}
     >
       <div className={styles.dateList}>
-        <div ref={startRef}></div>
         {data.map((date, index) => (
           <div
             key={index}
@@ -114,6 +120,9 @@ export const DateSelect = ({ className }: { className: string }) => {
               selectedIndex === index ? styles.selected : ""
             }`}
             onClick={() => setSelectedIndex(index)}
+            ref={
+              index === 0 ? startRef : index === data.length - 1 ? endRef : null
+            }
           >
             <div className="p-md pt-sm pb-sm">
               <p className="typo-subTitle">{days[date[1]]}</p>
@@ -121,7 +130,6 @@ export const DateSelect = ({ className }: { className: string }) => {
             </div>
           </div>
         ))}
-        <div ref={endRef}></div>
       </div>
     </div>
   );
